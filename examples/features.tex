@@ -1,0 +1,58 @@
+% 从仓库根目录运行：latexmk -xelatex -outdir=build examples/features.tex
+\documentclass[11pt,a4paper,UTF8,fontset=none]{ctexart}
+\usepackage[code,theorems,boxes,subfigures]{easyR}
+\title{可选功能示例}
+\author{姓名}
+\reportsetup{course={课程名称},assignment={功能示例},student-id={学号}}
+\begin{document}
+\mytitle
+\section{定理与引用}
+\begin{Theorem}\label{thm:positive}
+若 $a>0$ 且 $b>0$，则 $a+b>0$。
+\end{Theorem}
+\begin{Lemma}\label{lem:square}
+对任意实数 $x$，有 $x^2\geq0$。
+\end{Lemma}
+\begin{Corollary}\label{cor:square}
+对任意实数 $x$，有 $x^2+1>0$。
+\end{Corollary}
+\begin{Proposition}\label{prop:zero}
+若 $x=0$，则 $x^2=0$。
+\end{Proposition}
+\begin{Definition}\label{def:even}
+能被 2 整除的整数称为偶数。
+\end{Definition}
+\begin{Example}\label{ex:even}
+整数 4 是偶数。
+\end{Example}
+同一节内共用编号，但引用名称分别保留：
+\autoref{thm:positive}、\autoref{lem:square}、\autoref{cor:square}、
+\autoref{prop:zero}、\autoref{def:even}、\autoref{ex:even}。
+\section{代码与文本框}
+\begin{lstlisting}[language=Python]
+# 计算理论传输时间
+size_bytes = 1_000_000
+bandwidth_bps = 10_000_000
+print(8 * size_bytes / bandwidth_bps)
+\end{lstlisting}
+\begin{reportbox}[title={说明}]
+这个文本框默认与当前正文等宽，内容较长时可以自动跨页。
+\end{reportbox}
+\tbox[width=0.75\linewidth]{仍可使用旧模板中的 \texttt{\string\tbox} 命令；宽度通过可选参数设置。}
+\section{子图}
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}{0.45\linewidth}
+  \centering
+  \includegraphics[width=0.4\linewidth]{figures/sjtu_logo_notitle.pdf}
+  \caption{第一幅子图}\label{fig:first}
+\end{subfigure}\hfill
+\begin{subfigure}{0.45\linewidth}
+  \centering
+  \includegraphics[width=0.4\linewidth]{figures/sjtu_logo_notitle.pdf}
+  \caption{第二幅子图}\label{fig:second}
+\end{subfigure}
+\caption{使用 subcaption 排列子图}\label{fig:pair}
+\end{figure}
+\autoref{fig:pair} 包含子图 \subref{fig:first} 和 \subref{fig:second}。
+\end{document}

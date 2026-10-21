@@ -1,0 +1,25 @@
+# LaTeX 编译中间文件；保留根目录的 main.pdf 作为模板预览。
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.nav
+*.snm
+*.vrb
+*.idx
+*.ilg
+*.ind
+*.pyc
+__pycache__/
+build/
+.DS_Store

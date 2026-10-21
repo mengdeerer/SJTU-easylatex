@@ -1,0 +1,23 @@
+name: LaTeX checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装编译与检查工具
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends latexmk texlive-xetex texlive-lang-chinese texlive-latex-extra poppler-utils
+      - name: 编译示例并检查中文与错误提示
+        run: python3 tests/check.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: example-pdfs
+          path: |
+            build/checks/main.pdf
+            build/checks/features.pdf

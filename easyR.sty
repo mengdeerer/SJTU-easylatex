@@ -1,77 +1,141 @@
-% Description: This is a style file for easyR.
-%编译方式使用xelatex
-\ProvidesPackage{easyR}
+% SJTU-easylatex：简易中文课程报告样式，使用 XeLaTeX 编译。
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{easyR}[2026/10/21 v1.0 Simple Chinese course reports]
 
-%%页边距
-\RequirePackage[left=2.50cm, right=2.50cm, top=2.50cm, bottom=2.50cm]{geometry}
-%%一些必要的宏包
-\RequirePackage[unicode=true,colorlinks,urlcolor=blue,linkcolor=blue,bookmarksnumbered=blue]{hyperref}
-\RequirePackage{latexsym,amssymb,amsmath,amsbsy,amsopn,amstext,amsthm,amsxtra,color,bm,calc,ifpdf}
-\RequirePackage{graphicx}
-\RequirePackage{enumerate}
+\RequirePackage{iftex}
+\RequireXeTeX
+\@ifclassloaded{ctexart}{}{%
+  \PackageError{easyR}{The ctexart document class is required}%
+    {Use documentclass[12pt,a4paper,UTF8,fontset=none]{ctexart}.}}
+
+% 默认仅加载正文、数学、图表与页眉所需的宏包。
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=easyR,prefix=easyR@}
+\DeclareStringOption[bundled]{font}
+\DeclareStringOption[fonts/]{fontpath}
+\DeclareBoolOption[false]{code}
+\DeclareBoolOption[false]{theorems}
+\DeclareBoolOption[false]{boxes}
+\DeclareBoolOption[false]{subfigures}
+\ProcessKeyvalOptions*
+\RequirePackage{etoolbox}
+\RequirePackage[margin=2.5cm,headheight=16pt]{geometry}
+\RequirePackage{amsmath,amssymb,bm}
+\RequirePackage{graphicx,xcolor}
+\RequirePackage{booktabs,tabularx}
 \RequirePackage{fancyhdr}
-\RequirePackage{listings}
-\RequirePackage{multirow}
-\RequirePackage{makeidx}
-\RequirePackage{xcolor}
-\RequirePackage{fontspec}
-\RequirePackage{subfigure}
-\RequirePackage{hyperref}
-\RequirePackage{pythonhighlight}
-\RequirePackage{float}
-\RequirePackage{tcolorbox}
-% \RequirePackage{fontawesome}
 
+% 随附字体避免依赖操作系统；自定义模式不替用户猜测或替换字体。
+\ifdefstring{\easyR@font}{bundled}{%
+  \IfFileExists{\easyR@fontpath NotoSerifSC-Regular.otf}{}{
+    \PackageError{easyR}{Bundled regular font not found}%
+      {Keep the fonts directory beside main.tex, or set fontpath explicitly.}}
+  \IfFileExists{\easyR@fontpath NotoSerifSC-Bold.otf}{}{
+    \PackageError{easyR}{Bundled bold font not found}%
+      {Keep the fonts directory beside main.tex, or set fontpath explicitly.}}
+  \setCJKmainfont{NotoSerifSC-Regular.otf}
+    [Path=\easyR@fontpath,BoldFont=NotoSerifSC-Bold.otf]
+  \setCJKsansfont{NotoSerifSC-Regular.otf}
+    [Path=\easyR@fontpath,BoldFont=NotoSerifSC-Bold.otf]
+  \setCJKmonofont{NotoSerifSC-Regular.otf}[Path=\easyR@fontpath]
+}{%
+  \ifdefstring{\easyR@font}{custom}{}{
+    \PackageError{easyR}{Unknown font mode: \easyR@font}%
+      {Valid values are font=bundled and font=custom.}}}
 
-%%对一些autoref的中文引用名作修改
-\def\equationautorefname{式}
-\def\footnoteautorefname{脚注}
-\def\itemautorefname{项}
-\def\figureautorefname{图}
-\def\tableautorefname{表}
-\def\partautorefname{篇}
-\def\appendixautorefname{附录}
-\def\chapterautorefname{章}
-\def\sectionautorefname{节}
-\def\subsectionautorefname{小小节}
-\def\subsubsectionautorefname{subsubsection}
-\def\paragraphautorefname{段落}
-\def\subparagraphautorefname{子段落}
-\def\FancyVerbLineautorefname{行}
-\def\theoremautorefname{定理}
+\ifeasyR@code
+  \RequirePackage{listings}
+  \lstset{basicstyle=\ttfamily\small,breaklines=true,
+    columns=fullflexible,keepspaces=true,showstringspaces=false,
+    commentstyle=\normalfont\small\color{gray!65!black},
+    frame=single,rulecolor=\color{gray!40},tabsize=4}
+\fi
+\ifeasyR@theorems
+  \RequirePackage{amsthm,aliascnt}
+\fi
+\ifeasyR@boxes
+  \RequirePackage{tcolorbox}
+  \tcbuselibrary{breakable}
+  \newtcolorbox{reportbox}[1][]{colback=gray!5,colframe=gray!60,
+    width=\linewidth,boxrule=0.5pt,arc=1mm,breakable,
+    before skip=8pt,after skip=8pt,#1}
+  % 保留原模板的写法，并允许指定宽度等选项。
+  \NewDocumentCommand{\tbox}{O{} +m}{%
+    \begin{reportbox}[#1]#2\end{reportbox}}
+\else
+  \NewDocumentCommand{\tbox}{O{} +m}{%
+    \PackageError{easyR}{Box support is disabled}%
+      {Load easyR with the boxes option to use tbox.}}
+\fi
+\ifeasyR@subfigures
+  \RequirePackage{subcaption}
+\fi
+% 链接设置在其他基础宏包之后加载，避免重复加载 hyperref。
+\RequirePackage[unicode=true,colorlinks=true,bookmarksnumbered=true,
+  linkcolor=black,citecolor=black,urlcolor=blue!60!black]{hyperref}
 
-\newtheorem{Theorem}{定理}[section]
-\newtheorem{Lemma}[Theorem]{引理}
-\newtheorem{Corollary}[Theorem]{推论}
-\newtheorem{Proposition}[Theorem]{命题}
-\newtheorem{Definition}[Theorem]{定义}
-\newtheorem{Example}[Theorem]{例}
+\ifeasyR@theorems
+  % 中文定理使用正体，避免请求随附字体中不存在的斜体字形。
+  \theoremstyle{definition}
+  \newtheorem{Theorem}{定理}[section]
+  % 共用编号，但保留各自的引用类型，避免把引理也引用为“定理”。
+  \newcommand{\easyR@newtheorem}[2]{%
+    \newaliascnt{#1}{Theorem}%
+    \newtheorem{#1}[#1]{#2}%
+    \aliascntresetthe{#1}%
+    \expandafter\def\csname #1autorefname\endcsname{#2}}
+  \easyR@newtheorem{Lemma}{引理}
+  \easyR@newtheorem{Corollary}{推论}
+  \easyR@newtheorem{Proposition}{命题}
+  \theoremstyle{definition}
+  \easyR@newtheorem{Definition}{定义}
+  \easyR@newtheorem{Example}{例}
+  \def\Theoremautorefname{定理}
+\fi
+\AtBeginDocument{%
+  \def\equationautorefname{式}%
+  \def\footnoteautorefname{脚注}%
+  \def\figureautorefname{图}%
+  \def\tableautorefname{表}%
+  \def\sectionautorefname{节}%
+  \def\subsectionautorefname{节}%
+  \def\subsubsectionautorefname{节}%
+  \def\appendixautorefname{附录}%
+  \def\paragraphautorefname{段}%
+  \def\subparagraphautorefname{段}}
 
-
-%%文本框设置
-\newcommand{\tbox}[1]{
-\begin{center}
-\begin{tcolorbox}[colback=gray!10,%gray background
-                  colframe=black,% black frame colour
-                  width=8cm,% Use 8cm total width,
-                  arc=1mm, auto outer arc,
-                  boxrule=0.5pt,
-                 ]
-{#1}
-\end{tcolorbox}
-\end{center}
-}
-
-%页眉设置
+% 作业信息由主文件填写；排版参数也可在主文件中覆盖。
+\newcommand{\easyR@course}{}
+\newcommand{\easyR@assignment}{}
+\newcommand{\easyR@studentid}{}
+\define@key{easyRsetup}{course}{\renewcommand{\easyR@course}{#1}}
+\define@key{easyRsetup}{assignment}{\renewcommand{\easyR@assignment}{#1}}
+\define@key{easyRsetup}{student-id}{\renewcommand{\easyR@studentid}{#1}}
+\newcommand{\reportsetup}[1]{\setkeys{easyRsetup}{#1}}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{3pt}
+\linespread{1.15}
+\renewcommand{\arraystretch}{1.2}
+\ctexset{section={beforeskip=12pt,afterskip=8pt},
+  subsection={beforeskip=9pt,afterskip=5pt},
+  subsubsection={beforeskip=7pt,afterskip=4pt}}
 \pagestyle{fancy}
-\fancyhead[L]{\fangsong 报告}%%留空则不显示
-\fancyhead[C]{\fangsong}%%留空则不显示
-\fancyhead[R]{}%%留空则不显示
+\fancyhf{}
+\fancyhead[L]{\small\normalfont\easyR@course}
+\fancyhead[R]{\small\normalfont\easyR@assignment}
+\fancyfoot[C]{\small\thepage}
 
-\newcommand{\mytitle}{
-\title{ \Huge \textbf{{标题}}}
-\author{薛佳龙 522031910045}
 \date{}
-\maketitle
-\thispagestyle{fancy}
-}
+\renewcommand{\maketitle}{%
+  \par\begingroup
+  \centering\setlength{\parindent}{0pt}
+  {\LARGE\bfseries\@title\par}
+  \vspace{0.8em}
+  {\normalsize\@author
+    \ifdefempty{\easyR@studentid}{}{\quad 学号：\easyR@studentid}\par}
+  \ifdefempty{\@date}{}{\vspace{0.4em}{\small\@date\par}}
+  \endgroup
+  \vspace{1.2em}\thispagestyle{fancy}}
+\newcommand{\mytitle}{\maketitle}
+\AtBeginDocument{\hypersetup{pdftitle={\@title},pdfauthor={\@author}}}
+\endinput

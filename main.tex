@@ -1,20 +1,58 @@
-
-\documentclass[12pt,hyperref,a4paper,UTF8]{ctexart}
+% !TeX program = xelatex
+\documentclass[11pt,a4paper,UTF8,fontset=none]{ctexart}
 \usepackage{easyR}
+
+% 每次写作业，修改这里的信息和下面的正文即可。
+\title{课程作业报告示例}
+\author{姓名}
+\reportsetup{course={课程名称},assignment={第一次作业},student-id={学号}}
+% 如需日期，取消下一行注释。
+% \date{\today}
+
 \begin{document}
-% --------------------------------------------------------------
-%                         Start here
-% --------------------------------------------------------------
-% 在标题页应用页眉和页脚
-\mytitle
+\maketitle
 
-\section{部分1}
-\subsection{子部分1}
-\tbox{hihi}
-\newpage
-\section{部分2888}
+\section{如何使用这个模板}
+本模板用于篇幅较短的中文课程报告。标题、姓名和学号在主文件中填写，
+正文使用普通的章节、公式、图片和表格环境。编译时使用 XeLaTeX；
+字体已随项目提供，不需要另行安装。
 
-% --------------------------------------------------------------
-%     You don't have to mess with anything below this line.
-% --------------------------------------------------------------
+\subsection{公式与交叉引用}
+例如，传输一个大小为 $S$ 字节的文件，在带宽为 $B$ bit/s 的网络中，
+忽略协议开销时，理论传输时间为
+\begin{equation}\label{eq:time}
+  t=\frac{8S}{B}.
+\end{equation}
+通过 \verb|\label| 设置标签，再用 \verb|\autoref| 引用，
+可以得到带名称的编号，如\autoref{eq:time}。文档增删内容后，编号会自动更新。
+
+\subsection{表格}
+表格建议使用三线表。\autoref{tab:example} 列出了两个计算结果。
+\begin{table}[htbp]
+  \centering
+  \caption{1 MB 文件的理论传输时间}\label{tab:example}
+  \begin{tabular}{@{}lcc@{}}
+    \toprule
+    文件大小 & 网络带宽 & 理论传输时间\\
+    \midrule
+    1 MB & 1 Mbps & 8 秒\\
+    1 MB & 10 Mbps & 0.8 秒\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{图片}
+图片放在 \texttt{figures/} 目录下，使用相对路径引用。
+\autoref{fig:logo} 使用了仓库原有的校徽资源。
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.18\linewidth]{figures/sjtu_logo_notitle.pdf}
+  \caption{插图示例}\label{fig:logo}
+\end{figure}
+
+\section{需要更多功能时}
+代码高亮、定理、可分页文本框和子图分别由
+\texttt{code}、\texttt{theorems}、\texttt{boxes}、\texttt{subfigures}
+选项启用。完整用法见 \texttt{examples/features.tex} 和 README。
+
 \end{document}
