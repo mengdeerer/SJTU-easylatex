@@ -65,11 +65,15 @@ def main():
 
     main_text, _ = compile_pdf(ROOT / "main.tex", args.pdftotext)
     require(main_text, "课程作业报告示例", "学号", "理论传输时间")
-    # 默认模式不应加载未启用的可选模块。
-    files = (OUT / "main.fls").read_text(encoding="utf-8", errors="replace")
+    # 默认启用全部功能；仍允许显式关闭，并且不加载已关闭的模块。
+    minimal = fixture("minimal", document("精简模式正常。",
+        options="code=false,theorems=false,boxes=false,subfigures=false,logo=false"))
+    minimal_text, _ = compile_pdf(minimal, args.pdftotext)
+    require(minimal_text, "精简模式正常")
+    files = (OUT / "minimal.fls").read_text(encoding="utf-8", errors="replace")
     for package in ("listings.sty", "amsthm.sty", "tcolorbox.sty", "subcaption.sty"):
         if re.search(rf"[/\\]{re.escape(package)}(?:\s|$)", files):
-            raise RuntimeError(f"默认模式意外加载了 {package}")
+            raise RuntimeError(f"显式关闭后仍加载了 {package}")
 
     features, _ = compile_pdf(ROOT / "examples/features.tex", args.pdftotext)
     require(features, "定理1.1", "引理1.2", "推论1.3", "命题1.4", "定义1.5", "例1.6",
@@ -90,11 +94,19 @@ def main():
                              for i in range(1, 45))
     longbox = fixture("longbox", document(
         r"\begin{reportbox}[title={跨页检查}]" + paragraphs + r"\end{reportbox}",
-        options="boxes"))
+        setup=r"\reportsetup{course={跨页页眉检查}}"))
     box_text, raw_box = compile_pdf(longbox, args.pdftotext)
     require(box_text, "第1段", "第44段")
     if len([page for page in raw_box.split("\f") if page.strip()]) < 2:
         raise RuntimeError("长文本框未产生多个页面")
+    for page in raw_box.split("\f"):
+        if page.strip():
+            require(re.sub(r"\s+", "", page), "跨页页眉检查")
+
+    no_logo = fixture("nologo", document("无校徽模式正常。",
+        options="logo=false,logopath=nonexistent-logo.pdf"))
+    no_logo_text, _ = compile_pdf(no_logo, args.pdftotext)
+    require(no_logo_text, "无校徽模式正常")
 
     custom = fixture("customfont", document("自定义字体模式正常。", options="font=custom",
         setup=r"\setCJKmainfont{NotoSerifSC-Regular.otf}[Path=fonts/]"))
@@ -106,8 +118,10 @@ def main():
          "Bundled regular font not found", "xelatex"),
         ("badfont", document("test", options="font=invalid"),
          "Unknown font mode", "xelatex"),
-        ("disabledbox", document(r"\tbox{test}"),
+        ("disabledbox", document(r"\tbox{test}", options="boxes=false"),
          "Box support is disabled", "xelatex"),
+        ("missinglogo", document("test", options="logopath=nonexistent-logo.pdf"),
+         "Header logo not found", "xelatex"),
         ("wrongengine", document("test"), "XeTeX is required", "pdflatex"),
     ]
     for name, source, expected, engine in cases:
@@ -115,7 +129,7 @@ def main():
         run([engine, "-interaction=nonstopmode", "-halt-on-error",
              "-output-directory=build/checks", str(path.relative_to(ROOT))],
             success=False, expected=expected)
-    print("通过：默认示例、可选功能、中文提取、元数据、交叉引用、跨页文本框、自定义字体及 4 项失败路径。")
+    print("通过：默认功能、显式关闭、中文提取、元数据、交叉引用、跨页页眉与文本框、自定义字体及 5 项失败路径。")
 
 
 if __name__ == "__main__":

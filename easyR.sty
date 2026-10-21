@@ -1,6 +1,6 @@
 % SJTU-easylatex：简易中文课程报告样式，使用 XeLaTeX 编译。
 \NeedsTeXFormat{LaTeX2e}[2020/10/01]
-\ProvidesPackage{easyR}[2026/10/21 v1.0 Simple Chinese course reports]
+\ProvidesPackage{easyR}[2026/10/21 v1.1 Simple Chinese course reports]
 
 \RequirePackage{iftex}
 \RequireXeTeX
@@ -8,22 +8,29 @@
   \PackageError{easyR}{The ctexart document class is required}%
     {Use documentclass[12pt,a4paper,UTF8,fontset=none]{ctexart}.}}
 
-% 默认仅加载正文、数学、图表与页眉所需的宏包。
+% 常用功能默认启用；需要时可以通过 false 显式关闭。
 \RequirePackage{kvoptions}
 \SetupKeyvalOptions{family=easyR,prefix=easyR@}
 \DeclareStringOption[bundled]{font}
 \DeclareStringOption[fonts/]{fontpath}
-\DeclareBoolOption[false]{code}
-\DeclareBoolOption[false]{theorems}
-\DeclareBoolOption[false]{boxes}
-\DeclareBoolOption[false]{subfigures}
+\DeclareStringOption[figures/sjtu_logo_notitle.pdf]{logopath}
+\DeclareBoolOption[true]{logo}
+\DeclareBoolOption[true]{code}
+\DeclareBoolOption[true]{theorems}
+\DeclareBoolOption[true]{boxes}
+\DeclareBoolOption[true]{subfigures}
 \ProcessKeyvalOptions*
 \RequirePackage{etoolbox}
-\RequirePackage[margin=2.5cm,headheight=16pt]{geometry}
+\RequirePackage[margin=2.5cm,headheight=24pt]{geometry}
 \RequirePackage{amsmath,amssymb,bm}
 \RequirePackage{graphicx,xcolor}
 \RequirePackage{booktabs,tabularx}
 \RequirePackage{fancyhdr}
+\ifeasyR@logo
+  \IfFileExists{\easyR@logopath}{}{%
+    \PackageError{easyR}{Header logo not found}%
+      {Keep the figures directory, set logopath, or use logo=false.}}
+\fi
 
 % 随附字体避免依赖操作系统；自定义模式不替用户猜测或替换字体。
 \ifdefstring{\easyR@font}{bundled}{%
@@ -121,7 +128,11 @@
   subsubsection={beforeskip=7pt,afterskip=4pt}}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\normalfont\easyR@course}
+\fancyhead[L]{\small\normalfont
+  \ifeasyR@logo
+    \raisebox{-0.3\height}{\includegraphics[height=6mm]{\easyR@logopath}}\hspace{0.6em}%
+  \fi
+  \easyR@course}
 \fancyhead[R]{\small\normalfont\easyR@assignment}
 \fancyfoot[C]{\small\thepage}
 
